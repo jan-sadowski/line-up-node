@@ -20,9 +20,16 @@ namespace LineUpNode.Services
                 try
                 {
                     var movies = await scraper.GetMoviesAsync();
+
                     if (movies != null)
                     {
-                        allMovies.AddRange(movies);
+                        var movieList = movies.ToList();
+
+                        if (movieList.Any())
+                        {
+                            allMovies.AddRange(movieList);
+                            Console.WriteLine($"[{scraper.CinemaName}] Found {movieList.Count} movies");
+                        }
                     }
                 }
                 catch (Exception ex)

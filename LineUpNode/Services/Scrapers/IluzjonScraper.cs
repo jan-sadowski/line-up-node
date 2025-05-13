@@ -9,41 +9,51 @@ namespace LineUpNode.Services.Scrapers
 
         public async Task<IEnumerable<MovieDto>> GetMoviesAsync()
         {
-            var url = "https://www.iluzjon.fn.org.pl/repertuar.html";
+            const string url = "https://www.iluzjon.fn.org.pl/repertuar.html";
             var movies = new List<MovieDto>();
 
             try
             {
                 using var client = new HttpClient();
                 client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0");
-                
+
                 var html = await client.GetStringAsync(url);
-                
                 var doc = new HtmlDocument();
                 doc.LoadHtml(html);
-                
-                var titleNodes = doc.DocumentNode.SelectNodes("//article//h3");
-                var timeNodes = doc.DocumentNode.SelectNodes("//article//span[@class='hour']");
-                var locationNodes = doc.DocumentNode.SelectNodes("//article//div[@class='location']");
 
-                if (titleNodes != null && timeNodes != null && locationNodes != null)
+                var dayBlocks = doc.DocumentNode.SelectNodes("//div[contains(@class, 'box wide')]");
+
+                if (dayBlocks != null)
                 {
-                    var count = Math.Min(titleNodes.Count, Math.Min(timeNodes.Count, locationNodes.Count));
-                    
-                    for (int i = 0; i < count; i++)
+                    foreach (var block in dayBlocks)
                     {
-                        var title = titleNodes[i].InnerText.Trim();
-                        var time = timeNodes[i].InnerText.Trim();
-                        var location = locationNodes[i].InnerText.Trim();
+                        var dateNode = block.SelectSingleNode(".//h3");
+                        if (dateNode == null) continue;
 
-                        movies.Add(new MovieDto
+                        var dateText = dateNode.InnerText.Trim(); 
+
+                        var showNodes = block.SelectNodes(".//span[@class='hour']");
+                        if (showNodes == null) continue;
+
+                        foreach (var show in showNodes)
                         {
-                            Title = title,
-                            Time = time,
-                            Cinema = CinemaName
-                        });
+                            var fullText = show.InnerText.Trim();
 
-                        Console.WriteLine("{0}, {1}, {2}", title, time, location);
+                            var parts = fullText.Split('-', 2, StringSplitOptions.RemoveEmptyEntries);
+                            if (parts.Length < 2) continue;
+
+                            var time = parts[0].Trim();
+                            var title = parts[1].Trim();
+
+                            movies.Add(new MovieDto
+                            {
+                                Title = title,
+                                Time = $"{dateText} {time}",
+                                Cinema = CinemaName
+                            });
+
+                            Console.WriteLine("Added: {0} {1} {2}", title, dateText, time);
+                        }
                     }
                 }
                 else
