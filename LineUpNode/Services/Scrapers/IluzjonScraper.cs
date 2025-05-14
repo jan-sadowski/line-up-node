@@ -1,5 +1,6 @@
-using HtmlAgilityPack;
 using LineUpNode.Models;
+using LineUpNode.Helpers;
+using HtmlAgilityPack;
 
 namespace LineUpNode.Services.Scrapers
 {
@@ -21,38 +22,41 @@ namespace LineUpNode.Services.Scrapers
                 var doc = new HtmlDocument();
                 doc.LoadHtml(html);
 
-                var dayBlocks = doc.DocumentNode.SelectNodes("//div[contains(@class, 'box wide')]");
+                var dayBlocks = doc.DocumentNode.SelectNodes("//h3");
 
                 if (dayBlocks != null)
                 {
-                    foreach (var block in dayBlocks)
+                    string currentDate;
+
+                    foreach (var dayBlock in dayBlocks)
                     {
-                        var dateNode = block.SelectSingleNode(".//h3");
-                        if (dateNode == null) continue;
+                        var dateText = dayBlock.InnerText.Trim();
+                        Console.WriteLine($"Found date: {dateText}");
+           
+                        currentDate = dateText;
 
-                        var dateText = dateNode.InnerText.Trim(); 
-
-                        var showNodes = block.SelectNodes(".//span[@class='hour']");
+                        var showNodes = dayBlock.SelectNodes(".//following-sibling::table//span[@class='hour']");
                         if (showNodes == null) continue;
 
                         foreach (var show in showNodes)
                         {
                             var fullText = show.InnerText.Trim();
-
                             var parts = fullText.Split('-', 2, StringSplitOptions.RemoveEmptyEntries);
                             if (parts.Length < 2) continue;
 
                             var time = parts[0].Trim();
                             var title = parts[1].Trim();
 
+                            var formattedDateTime = IluzjonDateParser.FormatDateTime(currentDate, time); // metoda pomocnicza
+                            
                             movies.Add(new MovieDto
                             {
                                 Title = title,
-                                Time = $"{dateText} {time}",
+                                Time = formattedDateTime,
                                 Cinema = CinemaName
                             });
 
-                            Console.WriteLine("Added: {0} {1} {2}", title, dateText, time);
+                            Console.WriteLine($"Added: {title} at {formattedDateTime}");
                         }
                     }
                 }
@@ -63,7 +67,7 @@ namespace LineUpNode.Services.Scrapers
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error: {0}", ex.Message);
+                Console.WriteLine($"Error: {ex.Message}");
             }
 
             return movies;
