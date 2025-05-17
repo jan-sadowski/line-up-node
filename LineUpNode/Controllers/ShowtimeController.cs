@@ -16,10 +16,15 @@ namespace LineUpNode.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<MovieDto>>> GetMovies()
+        public async Task<ActionResult<IEnumerable<MovieDto>>> GetMovies(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 15,
+            [FromQuery] string? date = null,
+            [FromQuery] string? cinemaName = null,
+            [FromQuery] string? title = null)
         {
-            var allMovies = await _scraperService.GetAllMoviesAsync();
-            return Ok(allMovies);
+            var movies = await _scraperService.GetFilteredSortedPagedMoviesAsync(page, pageSize, date, cinemaName, title);
+            return Ok(movies);
         }
     }
 }
