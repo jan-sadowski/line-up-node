@@ -10,7 +10,7 @@ namespace LineUpNode.Services.Scrapers
 
         public async Task<IEnumerable<MovieDto>> GetMoviesAsync()
         {
-            const string url = "https://www.iluzjon.fn.org.pl/repertuar.html";
+            var url = "https://www.iluzjon.fn.org.pl/repertuar.html";
             var movies = new List<MovieDto>();
 
             try

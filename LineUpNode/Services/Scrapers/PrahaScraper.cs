@@ -11,7 +11,7 @@ namespace LineUpNode.Services.Scrapers
 
         public async Task<IEnumerable<MovieDto>> GetMoviesAsync()
         {
-            const string url = "https://www.mteatr.pl/pl/repertuar-kino-praha";
+            var url = "https://www.mteatr.pl/pl/repertuar-kino-praha";
             var movies = new List<MovieDto>();
 
             try
