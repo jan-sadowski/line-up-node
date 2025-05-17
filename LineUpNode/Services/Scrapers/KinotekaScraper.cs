@@ -21,12 +21,12 @@ namespace LineUpNode.Services.Scrapers
                 var doc = new HtmlDocument();
                 doc.LoadHtml(html);
                 
-                Console.WriteLine($"Scraping page: {url}");
+                Console.WriteLine("Scraping page: {0}", url);
                 
                 var movieLinks = doc.DocumentNode.SelectNodes("//article[@class='e-movie']");
                 if (movieLinks != null)
                 {
-                    Console.WriteLine($"Found {movieLinks.Count} movies");
+                    Console.WriteLine("Found {0} movies", movieLinks.Count);
 
                     foreach (var movieLink in movieLinks)
                     {
